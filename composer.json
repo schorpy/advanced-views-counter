@@ -1,0 +1,25 @@
+{
+    "name": "schorpy/avc",
+    "description": "Advanced Views Counter for WordPress",
+    "type": "project",
+    "authors": [
+        {
+            "name": "schorpy"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "AVC\\": "inc/",
+            "AVC\\App\\": "app/",
+            "AVC\\Libs\\": "libs/"
+        },
+        "files": [
+            "libs/assets.php",
+            "libs/db.php",
+            "inc/functions.php"
+        ]
+    }
+}
