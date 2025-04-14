@@ -26,7 +26,7 @@ import {
 
 import { Checkbox } from "@/components/ui/checkbox"
 import FetchWrapper from '@/hooks/FetchWrapper';
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Spinner } from '@/components/ui/spinner';
 
 // Update the schema
@@ -92,14 +92,15 @@ export function CountForm() {
     name: "urls",
     control: form.control,
   })
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   function onSubmit(data: CountFormValues) {
-    console.log('Submitting data:', data);
+    setIsSubmitting(true);
     api.put('/settings/counts/update', JSON.stringify(data)) 
       .then(response => {
         toast.success('Settings updated successfully', {
           description: 'Your display settings have been saved.'
         });
+        setIsSubmitting(false);
       })
       .catch(error => {
         console.error("Error updating settings:", error);
@@ -246,20 +247,18 @@ export function CountForm() {
           )}
         />
         
-        <Button type="submit">Update</Button>
+        <Button type="submit" className="font-semibold text-white" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4 text-white" />
+                Updating...
+              </>
+            ) : (
+              'Update'
+            )}
+          </Button>
       </form>
     </Form>
   )
 }
 
-// First, add this constant at the top with the other constants
-const display_styles = [
-  {
-    id: "icon",
-    label: "Icon Only",
-  },
-  {
-    id: "label",
-    label: "Label Only",
-  },
-] as const

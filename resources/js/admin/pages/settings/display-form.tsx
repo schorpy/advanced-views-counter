@@ -70,10 +70,12 @@ export function DisplayForm() {
       setIsLoading(false);
 
       // Ambil semua nilai selected dari post_types
-      const selectedPostTypes = Object.entries(response.post_types || {})
-        .filter(([_, item]: [string, any]) => item.selected)
-        .map(([id]) => id);
-
+      // const selectedPostTypes = Object.entries(response.post_types || {})
+      //   .filter(([_, item]: [string, any]) => item.selected)
+      //   .map(([id]) => id);
+      const selectedPostTypes = (response.post_types || [])
+      .filter((item: any) => item.selected)
+      .map((item: any) => item.id);
       // Ambil semua nilai selected dari page_types
       const selectedPageTypes = (response.page_types || [])
       .filter((item: any) => item.selected)
@@ -105,20 +107,22 @@ export function DisplayForm() {
   //   name: "urls",
   //   control: form.control,
   // })
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   function onSubmit(data: DisplayFormValues) {
-      console.log('Submitting data:', data);
+    setIsSubmitting(true);
       api.put('/settings/display/update', JSON.stringify(data)) 
         .then(response => {
           toast.success('Settings updated successfully', {
             description: 'Your display settings have been saved.'
           });
+          setIsSubmitting(false);
         })
         .catch(error => {
           console.error("Error updating settings:", error);
           toast.error('Failed to update settings', {
             description: 'Please try again later.'
           });
+          setIsSubmitting(false);
         });
     }
 
@@ -211,26 +215,19 @@ export function DisplayForm() {
                 </FormDescription>
               </div>
               <div className="flex flex-row flex-wrap gap-6">
-                {!isLoading &&
-                  settings?.post_types &&
-                  Object.entries(settings.post_types).map(([id, item]: [string, any]) => (
-                    <FormItem key={id} className="flex items-center space-x-3 space-y-0">
+                {settings?.post_types.map((item) => (
+                    <FormItem key={item.id} className="flex items-center space-x-3 space-y-0">
                       <FormControl>
                         <Checkbox
-                          checked={field.value?.includes(id)}
+                          checked={field.value?.includes(item.id)}
                           onCheckedChange={(checked) => {
                             const currentValue = field.value || [];
                             if (checked) {
-                              field.onChange([...currentValue, id]);
+                              field.onChange([...currentValue, item.id]);
                             } else {
-                              field.onChange(currentValue.filter((value) => value !== id));
+                              field.onChange(currentValue.filter((value) => value !== item.id));
                             }
-                            console.log('Checkbox changed:', {
-                              id,
-                              item,
-                              currentValue: field.value,
-                              checked,
-                            });
+                            
                           }}
                         />
                       </FormControl>
@@ -314,7 +311,16 @@ export function DisplayForm() {
           )}
         />
         
-        <Button type="submit">Update</Button>
+          <Button type="submit" className="font-semibold text-white" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4 text-white" />
+                Updating...
+              </>
+            ) : (
+              'Update'
+            )}
+          </Button>
       </form>
     </Form>
   )
