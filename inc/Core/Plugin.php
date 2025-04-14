@@ -8,12 +8,9 @@ if (! defined('ABSPATH')) {
 
 use AVC\Core\Api;
 use AVC\Admin\Menu;
-use AVC\Admin\CPTs;
 use AVC\App\Traits\Singleton;
 use AVC\Assets\Admin;
 use AVC\Assets\Frontend;
-// use AVC\Libs\Utils\CPT;
-use AVC\Libs\Utils\Metaboxes;
 
 
 final class Plugin
@@ -24,13 +21,7 @@ final class Plugin
     public static function init()
     {
 
-        // Code::getInstance();
         API::getInstance()->init();
-        // Assets::getInstance();
-        // CPTs::getInstance();
-        CPTs::getInstance()->init();
-        Metaboxes::getInstance();
-
         \AVC\Libs\Utils\Cache::init();
 
         if (is_admin()) {

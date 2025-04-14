@@ -10,7 +10,7 @@ if (! defined('ABSPATH')) {
 
 class Visit
 {
-    public function get_cid(\WP_REST_Request $request)
+    public function update(\WP_REST_Request $request)
     {
         // 🔒 Validate Nonce
         $nonce = $request->get_header('X-WP-Nonce');
@@ -22,39 +22,44 @@ class Visit
         if ($this->is_bot($user_agent)) {
             return new \WP_REST_Response(['status' => 'error', 'message' => 'Bot detected'], 403);
         }
+        $params = $request->get_json_params();
 
+        $post_id = $params['postId'] ?? null;
+        if (!$post_id) {
+            return new \WP_REST_Response(['status' => 'error', 'message' => 'Post ID is required'], 400);
+        }
         // 🔍 2. Get IP Address
         $ip_address = $this->get_client_ip();
 
 
-        // 🔥 4. Generate Click ID
+        //     // 🔥 4. Generate Click ID
         $clickid = 'CTZ' . bin2hex(random_bytes(10));
 
-        // 🏷 5. Get or Set Session ID
-        if (!isset($_COOKIE['session_id'])) {
-            $session_id = bin2hex(random_bytes(8));
-            setcookie('session_id', $session_id, time() + 86400, '/', '', true, true);
-        } else {
-            $session_id = sanitize_text_field($_COOKIE['session_id']);
-        }
+        //     // 🏷 5. Get or Set Session ID
+        //     if (!isset($_COOKIE['session_id'])) {
+        //         $session_id = bin2hex(random_bytes(8));
+        //         setcookie('session_id', $session_id, time() + 86400, '/', '', true, true);
+        //     } else {
+        //         $session_id = sanitize_text_field($_COOKIE['session_id']);
+        //     }
         global $wpdb;
-        $table_name = 'ctz_visits';
+        $table = $wpdb->prefix . 'avc_views';
+
+        $period = gmdate('Ymd');
         // 📥 6. Store in Database
-        $wpdb->insert($table_name, [
-            'click_id'    => $clickid,
-            'session_id' => $session_id,
-            'ip_address' => $ip_address,
-            'user_agent' => $user_agent,
-            'created_at' => current_time('mysql'),
-        ]);
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO $table (id, type, period, count)
+             VALUES (%d, 1, %s, 1)
+             ON DUPLICATE KEY UPDATE count = count + 1",
+            $post_id,
+            $period
+        ));
 
         return new \WP_REST_Response([
             'status' => 'success',
             'data'   => [
-                'clickid'    => $clickid,
-                'session_id' => $session_id,
-                'ip_address' => $ip_address,
-                'user_agent' => $user_agent,
+                'update'  => $status,
+
             ]
         ], 200);
     }

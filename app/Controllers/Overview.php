@@ -33,7 +33,7 @@ class Overview
 
         $results = $wpdb->get_results($wpdb->prepare(
             "SELECT period, SUM(count) as total
-             FROM wp_post_views
+             FROM wp_avc_views
              WHERE period BETWEEN %s AND %s
              GROUP BY period
              ORDER BY period ASC",

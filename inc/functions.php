@@ -52,3 +52,25 @@ function avc_get_config($config_file_name)
 	}
 	return array();
 }
+/**
+ * Remove post views from database when post is deleted.
+ *
+ * @global object $wpdb
+ *
+ * @param int $post_id
+ * @return void
+ */
+
+function delete_post_views($post_id)
+{
+	global $wpdb;
+
+	$data = [
+		'where'		=> ['id' => $post_id],
+		'format'	=> ['%d']
+	];
+
+	$data = apply_filters('pvc_delete_post_views_where_clause', $data, $post_id);
+
+	$wpdb->delete($wpdb->prefix . 'post_views', $data['where'], $data['format']);
+}

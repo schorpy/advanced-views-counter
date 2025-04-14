@@ -21,10 +21,10 @@ Route::prefix(
 	function (Route $route) {
 
 
-		$route->get('/visit', [\AVC\App\Controllers\Visit::class, 'get_cid']);
+		// Allow public POST
+		$route->post('/visit', [\AVC\App\Controllers\Visit::class, 'update'], true);
 
-		// $route->get('/reports', [\AVC\App\Controllers\Campaigns::class, 'get_targets'], 'admin');
-
+		// Only admins can access
 		$route->get('/settings/counts', [\AVC\App\Controllers\Settings::class, 'get_counts'], 'admin');
 		$route->get('/settings/display', [\AVC\App\Controllers\Settings::class, 'get_display'], 'admin');
 		$route->put('/settings/counts/update/', [\AVC\App\Controllers\Settings::class, 'update_counts'], 'admin');

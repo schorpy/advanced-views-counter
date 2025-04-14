@@ -44,9 +44,9 @@ class Frontend
 	 *
 	 * @var array
 	 */
-	private $allowed_screens = array(
-		'avc',
-	);
+	// private $allowed_screens = array(
+	// 	'avc',
+	// );
 
 	/**
 	 * Frontend bootstrapper.
@@ -61,49 +61,21 @@ class Frontend
 	}
 
 	/**
-	 * Enqueue WhatsApp chat script and data.
+	 * Enqueue avc script and data.
 	 */
 	public function enqueue_avc_script()
 	{
-		$allowed_urls = [
-			'/hello-world',
-			'/page-2',
-		];
-
-		$current_url = '';
-
-		if (isset($_SERVER['REQUEST_URI'])) {
-			$current_url = sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']));
-		}
-		$show_button = false;
-
-		// Cek apakah URL saat ini mengandung salah satu dari allowed URLs
-		foreach ($allowed_urls as $url) {
-			if (strpos($current_url, $url) !== false) {
-				$show_button = true;
-				break;
-			}
-		}
-
 
 
 		// Enqueue script sebelum menggunakan wp_localize_script
-		wp_register_script('avc-js', AVC_PLUGIN_ASSETS_URL . '/frontend.min.js', ['wp-element'], AVC_VERSION, true);
+		wp_register_script('avc-js', AVC_PLUGIN_ASSETS_URL . '/frontend/visit.js', ['wp-element'], AVC_VERSION, true);
 		wp_enqueue_script('avc-js');
 
-		// Kirim data ke JavaScript
+
 		// wp_localize_script('avc-chat', 'avcData', [
 		// 	'baseUrl' => get_site_url(),
-		// 	'pluginApiUrl' => rest_url() . avc_ROUTE_PREFIX,
-		// 	'showButton' => $show_button,
-		// 	'position' => '', //left, default right
-		// 	'contacts' => $contact_data,
-		// 	'texts' => [
-		// 		'buttonText' => 'Hubungi Via WhatsApp',
-		// 		'boxHeaderTitle' => 'Chat WhatsApp',
-		// 		'boxHeaderDesc' => 'Silahkan chat marketing kami.',
-		// 		'boxFooter' => 'Konsultasi Gratis!',
-		// 	],
+		// 	'pluginApiUrl' => rest_url() . AVC_ROUTE_PREFIX,
+
 		// 	'nonce'     => wp_create_nonce('wp_rest'),
 		// ]);
 	}
@@ -125,8 +97,8 @@ class Frontend
 	 */
 	public function enqueue_script($screen)
 	{
-		$current_screen     = $screen;
-		$template_file_name = Template::FRONTEND_TEMPLATE;
+		// $current_screen     = $screen;
+		// $template_file_name = Template::FRONTEND_TEMPLATE;
 
 
 		// if (! is_admin()) {
@@ -180,8 +152,10 @@ class Frontend
 
 		return array(
 			'isAdmin'   => is_admin(),
-			'apiUrl'    => rest_url(),
+			'apiUrl'    => rest_url() . AVC_ROUTE_PREFIX,
+			'postId' 	=> get_the_ID(),
 			'userInfo'  => $this->get_user_data(),
+			'nonce'     => wp_create_nonce('wp_rest'),
 		);
 	}
 
@@ -213,7 +187,7 @@ class Frontend
 
 		return array(
 			'username'  => $username,
-			'avatar'    => $avatar_url,
+			// 'avatar'    => $avatar_url,
 			'user_role' => $user_role,
 		);
 	}
