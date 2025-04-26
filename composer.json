@@ -1,6 +1,6 @@
 {
-    "name": "schorpy/avc",
-    "description": "Advanced Views Counter for WordPress",
+    "name": "schorpy/advico",
+    "description": "Advanced Views Counter - Powerful Post View Tracker with detailed analytics",
     "type": "project",
     "authors": [
         {
@@ -12,13 +12,12 @@
     },
     "autoload": {
         "psr-4": {
-            "AVC\\": "inc/",
-            "AVC\\App\\": "app/",
-            "AVC\\Libs\\": "libs/"
+            "Advico\\": "inc/",
+            "Advico\\App\\": "app/",
+            "Advico\\Libs\\": "libs/"
         },
         "files": [
             "libs/assets.php",
-            "libs/db.php",
             "inc/functions.php"
         ]
     }

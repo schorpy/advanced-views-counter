@@ -1,19 +1,19 @@
 <?php
 
-namespace AVC\Admin;
+namespace Advico\Admin;
 
 if (! defined('ABSPATH')) {
 	exit;
 }
 
-use AVC\App\Traits\Singleton;
+use Advico\App\Traits\Singleton;
 
 /**
  * Class Menu
  *
  * Represents the admin menu management for the plugin.
  *
- * @package AVC\Admin
+ * @package Advico\Admin
  */
 class Menu
 {
@@ -47,12 +47,12 @@ class Menu
 	{
 
 		add_menu_page(
-			__('Advaced Views Counter', 'advanced-views-counter'),
-			__('Advaced Views Counter', 'advanced-views-counter'),
+			__('Advanced Views Counter', 'advanced-views-counter'),
+			__('Advanced Views Counter', 'advanced-views-counter'),
 			'manage_options',
 			$this->parent_slug,
 			array($this, 'admin_page'),
-			'dashicons-email',
+			ADVICO_PLUGIN_ASSETS_URL . '/icons/icon-16x16.png',
 			3
 		);
 
@@ -76,15 +76,6 @@ class Menu
 
 			array(
 				'parent_slug' => $this->parent_slug,
-				'page_title'  => __('Reports', 'advanced-views-counter'),
-				'menu_title'  => __('Reports', 'advanced-views-counter'),
-				'capability'  => 'manage_options',
-				'menu_slug'   => $plugin_url . '/#/reports',
-				'function'    => null, // Uses the same callback function as parent menu.
-			),
-
-			array(
-				'parent_slug' => $this->parent_slug,
 				'page_title'  => __('Settings', 'advanced-views-counter'),
 				'menu_title'  => __('Settings', 'advanced-views-counter'),
 				'capability'  => 'manage_options',
@@ -93,7 +84,7 @@ class Menu
 			),
 		);
 
-		$plugin_submenu_pages = apply_filters('popzy_submenu_pages', $submenu_pages);
+		$plugin_submenu_pages = apply_filters('advico_submenu_pages', $submenu_pages);
 
 		foreach ($plugin_submenu_pages as $submenu) {
 
@@ -109,14 +100,14 @@ class Menu
 	}
 
 	/**
-	 * Callback function for the main "Popzy" menu page.
+	 * Callback function for the main "Advico" menu page.
 	 *
 	 * @return void
 	 */
 	public function admin_page()
 	{
 ?>
-		<div id="avc-admin" class="avc-app"></div>
+		<div id="advico-admin" class="advico-app"></div>
 <?php
 	}
 }

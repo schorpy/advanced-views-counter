@@ -1,16 +1,16 @@
 <?php
 
-namespace AVC\Core;
+namespace Advico\Core;
 
 if (! defined('ABSPATH')) {
     exit;
 }
 
-use AVC\Core\Api;
-use AVC\Admin\Menu;
-use AVC\App\Traits\Singleton;
-use AVC\Assets\Admin;
-use AVC\Assets\Frontend;
+use Advico\Core\Api;
+use Advico\Admin\Menu;
+use Advico\App\Traits\Singleton;
+use Advico\Assets\Admin;
+use Advico\Assets\Frontend;
 
 
 final class Plugin
@@ -22,25 +22,45 @@ final class Plugin
     {
 
         API::getInstance()->init();
-        \AVC\Libs\Utils\Cache::init();
+        \Advico\Libs\Utils\Cache::init();
 
         if (is_admin()) {
             Menu::getInstance()->init();
             Admin::getInstance()->bootstrap();
         }
         Frontend::getInstance()->bootstrap();
+
+        self::load_and_cache('advico_settings');
+        self::load_and_cache('advico_settings_count');
+
+        // add_action('init', array(__CLASS__, 'register_blocks'));
     }
     public static function activate()
     {
-        \AVC\Core\Install::getInstance()->init();
+        \Advico\Core\Install::getInstance()->init();
     }
     public static function deactivate()
     {
-        \AVC\Libs\Utils\Cache::deactivate();
+        \Advico\Libs\Utils\Cache::deactivate();
     }
     public static function uninstall()
     {
-        \AVC\Libs\Utils\Cache::uninstall();
-        \AVC\Core\Uninstall::getInstance()->init();
+        \Advico\Libs\Utils\Cache::uninstall();
+        \Advico\Core\Uninstall::run();
+    }
+
+    public static function register_blocks()
+    {
+        // register_block_type(Advico_PLUGIN_DIR . 'assets/blocks/block-1');
+    }
+
+    protected static function load_and_cache($key)
+    {
+        $cached = \Advico\Libs\Utils\Cache::get_cache($key);
+
+        if (!$cached) {
+            $from_option = json_decode(get_option($key, '{}'), true);
+            \Advico\Libs\Utils\Cache::set_cache($key, $from_option);
+        }
     }
 }

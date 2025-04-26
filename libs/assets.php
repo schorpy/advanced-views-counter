@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace AVC\Libs\Assets;
+namespace Advico\Libs\Assets;
 
 if (! defined('ABSPATH')) {
 	exit;
@@ -190,20 +190,14 @@ function inject_react_refresh_preamble_script(object $manifest): void
 
 	$react_refresh_script_src = generate_development_asset_src($manifest, '@react-refresh');
 	$script_position          = 'after';
-	$script = 'import RefreshRuntime from "' . $react_refresh_script_src . '";
-	RefreshRuntime.injectIntoGlobalHook(window);
-	window.$RefreshReg$ = () => {};
-	window.$RefreshSig$ = () => (type) => type;
-	window.__vite_plugin_react_preamble_installed__ = true;';
-
-	// 	$script                   = <<< EOS
-	// import RefreshRuntime from "{$react_refresh_script_src}";
-	// RefreshRuntime.injectIntoGlobalHook(window);
-	// window.\$RefreshReg$ = () => {};
-	// window.\$RefreshSig$ = () => (type) => type;
-	// window.__vite_plugin_react_preamble_installed__ = true;
-	// EOS;
-	//Squiz.PHP.Heredoc.NotAllowed 	Use of heredoc and nowdoc syntax ("<<<") is not allowed; use standard strings or inline HTML instead 
+	$script = sprintf(
+		'import RefreshRuntime from "%s";
+		RefreshRuntime.injectIntoGlobalHook(window);
+		window.$RefreshReg$ = () => {};
+		window.$RefreshSig$ = () => (type) => type;
+		window.__vite_plugin_react_preamble_installed__ = true;',
+		esc_js($react_refresh_script_src)
+	);
 
 	wp_add_inline_script(VITE_CLIENT_SCRIPT_HANDLE, $script, $script_position);
 	add_filter(
@@ -368,10 +362,13 @@ function parse_options(array $options): array
  *
  * @return string
  */
+
 function prepare_asset_url(string $dir)
 {
-	$content_dir         = wp_normalize_path(WP_CONTENT_DIR);
-	$manifest_dir        = wp_normalize_path($dir);
+	// Get the path to wp-content
+	$content_dir = wp_normalize_path(plugin_dir_path(__FILE__)); // Using plugin_dir_path instead of WP_CONTENT_DIR
+	$manifest_dir = wp_normalize_path($dir);
+
 	$url                 = content_url(str_replace($content_dir, '', $manifest_dir));
 	$url_matches_pattern = preg_match('/(?<address>http(?:s?):\/\/.*\/)(?<fullPath>wp-content(?<removablePath>\/.*)\/(?:plugins|themes)\/.*)/', $url, $url_parts);
 
@@ -383,6 +380,7 @@ function prepare_asset_url(string $dir)
 
 	return sprintf('%s%s', $address, str_replace($removable_path, '', $full_path));
 }
+
 
 /**
  * Register asset

@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace AVC\Assets;
+namespace Advico\Assets;
 
 if (! defined('ABSPATH')) {
 	exit;
 }
 
-use AVC\Core\Template;
-use AVC\App\Traits\Singleton;
-use AVC\Libs\Assets;
+use Advico\App\Traits\Singleton;
+use Advico\Libs\Assets;
 
 /**
  * Class Admin
  *
  * Handles admin functionalities for the avc.
  *
- * @package AVC\Admin
+ * @package Advico\Admin
  */
 class Admin
 {
@@ -25,17 +24,17 @@ class Admin
 	use Singleton;
 
 	/**
-	 * Script handle for AVC.
+	 * Script handle for Advico.
 	 */
-	const HANDLE = 'avc-plugin';
+	const HANDLE = 'advico-plugin';
 
 	/**
-	 * JS Object name for AVC.
+	 * JS Object name for Advico.
 	 */
-	const OBJ_NAME = 'avc_plugin';
+	const OBJ_NAME = 'advico_plugin';
 
 	/**
-	 * Development script path for AVC.
+	 * Development script path for Advico.
 	 */
 	const DEV_SCRIPT = 'resources/js/admin/main.jsx';
 
@@ -81,7 +80,7 @@ class Admin
 
 		if (in_array($current_screen, $this->allowed_screens, true)) {
 			Assets\enqueue_asset(
-				AVC_PLUGIN_DIR . '/assets/admin/dist',
+				ADVICO_PLUGIN_DIR . '/assets/admin/dist',
 				self::DEV_SCRIPT,
 				$this->get_config()
 			);
@@ -112,12 +111,12 @@ class Admin
 	{
 
 		return array(
-			'pluginName' => AVC_NAME,
+			'pluginName' => ADVICO_PLUGIN_NAME,
 			'isAdmin'   => is_admin(),
 			'apiUrl'    => rest_url(),
-			'pluginApiUrl' => rest_url() . AVC_ROUTE_PREFIX,
+			'pluginApiUrl' => rest_url() . ADVICO_ROUTE_PREFIX,
 			'userInfo'  => $this->get_user_data(),
-			'logo'     => AVC_PLUGIN_ASSETS_URL,
+			'logo'     => ADVICO_PLUGIN_ASSETS_URL,
 			'nonce'     => wp_create_nonce('wp_rest'),
 
 		);

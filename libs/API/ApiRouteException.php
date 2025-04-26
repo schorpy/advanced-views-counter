@@ -7,7 +7,7 @@
  * @since 1.0.0
  */
 
-namespace AVC\Libs\API;
+namespace Advico\Libs\API;
 
 if (! defined('ABSPATH')) {
 	exit;

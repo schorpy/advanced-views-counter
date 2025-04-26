@@ -1,6 +1,6 @@
 <?php
 
-namespace AVC\App\Traits;
+namespace Advico\App\Traits;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -10,7 +10,7 @@ if (! defined('ABSPATH')) {
  *
  * Provides a trait with a singleton pattern for obtaining an instance.
  *
- * @package AVC\Trait
+ * @package Advico\Trait
  */
 trait Singleton
 {

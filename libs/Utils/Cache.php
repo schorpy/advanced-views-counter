@@ -1,6 +1,6 @@
 <?php
 
-namespace AVC\Libs\Utils;
+namespace Advico\Libs\Utils;
 
 if (! defined('ABSPATH')) exit;
 
@@ -18,7 +18,7 @@ class Cache
 
         WP_Filesystem();
 
-        self::$cache_dir = wp_upload_dir()['basedir'] . '/popzy/';
+        self::$cache_dir = wp_upload_dir()['basedir'] . '/advico-counter/';
 
         if (!$wp_filesystem->is_dir(self::$cache_dir)) {
             $wp_filesystem->mkdir(self::$cache_dir, 0755);
@@ -41,6 +41,9 @@ class Cache
             $wp_filesystem->mkdir(self::$cache_dir);
         }
     }
+
+
+
 
     public static function set_cache($key, $data, $ttl = 3600)
     {
@@ -75,6 +78,8 @@ class Cache
         return false;
     }
 
+
+
     public static function delete_cache($key)
     {
         global $wp_filesystem;
@@ -105,7 +110,7 @@ class Cache
     {
         global $wp_filesystem;
 
-        self::$cache_dir = wp_upload_dir()['basedir'] . '/popzy/';
+        self::$cache_dir = wp_upload_dir()['basedir'] . '/advico-counter/';
 
         if ($wp_filesystem->is_dir(self::$cache_dir)) {
             $wp_filesystem->delete(self::$cache_dir, true); // `true` deletes the directory and its contents

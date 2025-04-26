@@ -6,13 +6,13 @@
  * @since 1.0.0
  */
 
-namespace AVC\Libs\API;
+namespace Advico\Libs\API;
 
 if (! defined('ABSPATH')) {
 	exit;
 }
 
-use AVC\Libs\API\ApiRouteException;
+use Advico\Libs\API\ApiRouteException;
 
 /**
  * Class ApiConfig

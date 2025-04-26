@@ -1,6 +1,6 @@
 <?php
 
-namespace AVC\Core;
+namespace Advico\Core;
 
 if (! defined('ABSPATH')) {
     exit;

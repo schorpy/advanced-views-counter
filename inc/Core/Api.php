@@ -1,20 +1,20 @@
 <?php
 
-namespace AVC\Core;
+namespace Advico\Core;
 
 if (! defined('ABSPATH')) {
 	exit;
 }
 
-use AVC\App\Traits\Singleton;
-use AVC\Libs\API\Config;
+use Advico\App\Traits\Singleton;
+use Advico\Libs\API\Config;
 
 /**
  * Class API
  *
  * Initializes and configures the API for the Popzy.
  *
- * @package AVC\Core
+ * @package Advico\Core
  */
 class API
 {
@@ -28,8 +28,8 @@ class API
 	 */
 	public function init()
 	{
-		Config::set_route_file(AVC_PLUGIN_DIR . '/inc/Routes/Api.php')
-			->set_namespace('AVC\Api')
+		Config::set_route_file(ADVICO_PLUGIN_DIR . '/inc/Routes/Api.php')
+			->set_namespace('Advico\Api')
 			->init();
 	}
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace AVC\App\Controllers;
+namespace Advico\App\Controllers;
 
 if (! defined('ABSPATH')) exit;
 
-use AVC\App\Models\PopupModel;
+use Advico\Libs\Utils\Cache;
 
 use WP_REST_Controller;
 use WP_REST_Request;
@@ -13,34 +13,20 @@ use WP_REST_Response;
 
 class Settings
 {
-    public function get_popup(WP_REST_Request $request)
-    {
-        $type = sanitize_text_field($request->get_param('type'));
-        $id = absint($request->get_param('id'));
-        if (empty($type)) {
-            return new WP_REST_Response(['message' => 'type parameter is required'], 400);
-        }
-
-        $popup = PopupModel::get_popup($type, $id);
-        if ($popup) {
-            return new WP_REST_Response($popup, 200);
-        }
-
-        return new WP_REST_Response(['message' => 'Popup not found'], 404);
-    }
 
     public function get_counts()
     {
-        // Ambil semua post type publik
+
         $post_types = get_post_types(['public' => true], 'objects');
 
         unset($post_types['reply'], $post_types['attachment']);
-        // Ambil pengaturan yang disimpan dari option tunggal
-        $saved_settings = json_decode(get_option('avc_settings_count', '{}'), true);
+
+        $saved_settings = json_decode(get_option('advico_settings_count', '{}'), true);
 
         $selected_exclude_visitors = $saved_settings['exclude_visitors'] ?? [];
         $selected_post_types = $saved_settings['post_types'] ?? [];
-
+        $selected_interval_count = $saved_settings['interval_count'] ?? "";
+        $selected_interval_unit = $saved_settings['interval_unit'] ?? "";
 
         // Siapkan array post_types dengan properti 'selected'
         $post_type_settings = [];
@@ -54,7 +40,7 @@ class Settings
 
 
         // Daftar exclude_visitors statis + 'selected'
-        //crawlers, AI bots ,logged in users, guests ,selected user roles
+        //crawlers,logged in users, guests ,selected user roles
         //selected user roles: Administrator, Author, Contributor, Editor, Subscriber
         $exclude_visitors = [
             ['id' => 'crawlers', 'label' => 'Crawlers'],
@@ -76,13 +62,8 @@ class Settings
         $settings = [
             'post_types' => $post_type_settings,
             'exclude_visitors' => $exclude_visitors,
-            'cleanup_intervals' => [
-                ['id' => 'daily', 'label' => 'Daily'],
-                ['id' => 'weekly', 'label' => 'Weekly'],
-                ['id' => 'monthly', 'label' => 'Monthly'],
-                ['id' => 'yearly', 'label' => 'Yearly'],
-                ['id' => 'never', 'label' => 'Never'],
-            ],
+            'interval_count' => $selected_interval_count,
+            'interval_unit' => $selected_interval_unit,
         ];
 
         return new \WP_REST_Response([
@@ -98,23 +79,27 @@ class Settings
         /// Validate and sanitize the input
         $post_types = isset($params['post_type']) ? array_map('sanitize_text_field', (array) $params['post_type']) : [];
         $exclude_visitors = isset($params['visitor_type']) ? array_map('sanitize_text_field', (array) $params['visitor_type']) : [];
-        $cleanup_interval = isset($params['cleanup_interval']) ? sanitize_text_field($params['cleanup_interval']) : 'after';
-
+        $interval_count = isset($params['interval_count']) ? sanitize_text_field($params['interval_count']) : '24';
+        $interval_unit = isset($params['interval_unit']) ? sanitize_text_field($params['interval_unit']) : 'hours';
         // Merge with existing settings
-        $settings = json_decode(get_option('avc_settings_count'), true) ?? [];
+        $settings = json_decode(get_option('advico_settings_count'), true) ?? [];
 
         $settings['post_types'] = $post_types;
         $settings['exclude_visitors'] =  $exclude_visitors;
-        $settings['cleanup'] = $cleanup_interval;
-
+        $settings['interval_count'] = $interval_count;
+        $settings['interval_unit'] = $interval_unit;
         // Save as JSON
-        update_option('avc_settings_count', wp_json_encode($settings));
+        update_option('advico_settings_count', wp_json_encode($settings));
+
+        Cache::set_cache('advico_settings_count', $settings);
 
         return new \WP_REST_Response([
             'status' => 'success',
             'message' => 'Settings updated successfully',
             'data' => [
                 'post_types' => $post_types,
+                'interval_count' => $interval_count,
+                'interval_unit' => $interval_unit,
             ]
         ], 200);
     }
@@ -122,13 +107,14 @@ class Settings
 
     public function get_display()
     {
-        // Ambil semua post type publik
+
         $post_types = get_post_types(['public' => true], 'objects');
 
         unset($post_types['reply'], $post_types['attachment']);
-        // Ambil pengaturan yang disimpan dari option tunggal
+
         $saved_settings = json_decode(get_option('avc_settings', '{}'), true);
 
+        $selected_exclude_visitors = $saved_settings['user_types'] ?? [];
         $selected_views_label = $saved_settings['views_label'] ?? [];
         $selected_post_types = $saved_settings['post_types'] ?? [];
         $selected_page_types = $saved_settings['page_types'] ?? [];
@@ -162,14 +148,29 @@ class Settings
         foreach ($display_styles as &$style) {
             $style['selected'] = in_array($style['id'], (array) $selected_display_styles);
         }
+        $exclude_visitors = [
+            ['id' => 'crawlers', 'label' => 'Crawlers'],
+            ['id' => 'logged_in', 'label' => 'Logged in Users'],
+            ['id' => 'guests', 'label' => 'Guests'],
+            ['id' => 'administrator', 'label' => 'Administrator'],
+            ['id' => 'author', 'label' => 'Author'],
+            ['id' => 'contributor', 'label' => 'Contributor'],
+            ['id' => 'editor', 'label' => 'Editor'],
+            ['id' => 'subscriber', 'label' => 'Subscriber'],
+        ];
 
-        // Kembalikan semua data
+        foreach ($exclude_visitors as &$exclude) {
+            $exclude['selected'] = in_array($exclude['id'], (array) $selected_exclude_visitors);
+        }
+
+        // return data
         $settings = [
             'views_label' => $selected_views_label,
             'position' => $saved_settings['position'] ?? 'after',
             'post_types' => $post_type_settings,
             'page_types' => $page_types,
             'display_styles' => $display_styles,
+            'user_types' => $exclude_visitors,
         ];
 
         return new \WP_REST_Response([
@@ -189,7 +190,7 @@ class Settings
         $display_styles = isset($params['display_style']) ? array_map('sanitize_text_field', (array) $params['display_style']) : [];
         $label = isset($params['views_label']) ? sanitize_text_field($params['views_label']) : '';
         $position = isset($params['position']) ? sanitize_text_field($params['position']) : 'after';
-
+        $user_types = isset($params['user_type']) ? array_map('sanitize_text_field', (array) $params['user_type']) : [];
         // Merge with existing settings
         $settings = json_decode(get_option('avc_settings'), true) ?? [];
 
@@ -198,10 +199,10 @@ class Settings
         $settings['display_styles'] = $display_styles;
         $settings['views_label'] = $label;
         $settings['position'] = $position;
-
+        $settings['user_types'] = $user_types;
         // Save as JSON
         update_option('avc_settings', wp_json_encode($settings));
-
+        Cache::set_cache('avc_settings', $settings);
         return new \WP_REST_Response([
             'status' => 'success',
             'message' => 'Settings updated successfully',

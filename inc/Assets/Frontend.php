@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace AVC\Assets;
+namespace Advico\Assets;
 
 if (! defined('ABSPATH')) {
 	exit;
 }
 
-use AVC\Core\Template;
-use AVC\App\Traits\Singleton;
-use AVC\Libs\Assets;
+use Advico\Core\Template;
+use Advico\App\Traits\Singleton;
+use Advico\Libs\Assets;
 
 /**
  * Class Frontend
  *
  * Handles frontend functionalities for the avc.
  *
- * @package AVC\Assets
+ * @package Advico\Assets
  */
 class Frontend
 {
@@ -27,17 +27,18 @@ class Frontend
 	/**
 	 * Script handle for avc.
 	 */
-	const HANDLE = 'avc-frontend';
+	const HANDLE = 'advico-frontend';
 
 	/**
 	 * JS Object name for avc.
 	 */
-	const OBJ_NAME = 'avcFrontend';
+	const OBJ_NAME = 'advicoFrontend';
 
 	/**
 	 * Development script path for avc.
 	 */
-	const DEV_SCRIPT = 'resources/js/frontend/main.jsx';
+	const DEV_SCRIPT = 'resources/js/frontend/index.jsx';
+
 
 	/**
 	 * List of allowed screens for script enqueue.
@@ -45,7 +46,7 @@ class Frontend
 	 * @var array
 	 */
 	// private $allowed_screens = array(
-	// 	'avc',
+	// 	'advico',
 	// );
 
 	/**
@@ -56,77 +57,98 @@ class Frontend
 	public function bootstrap()
 	{
 		add_action('wp_enqueue_scripts', array($this, 'enqueue_script'));
-		add_action('wp_footer', array($this, 'render_frontend_container'), 5);
-		add_action('wp_enqueue_scripts', array($this, 'enqueue_avc_script'));
-	}
-
-	/**
-	 * Enqueue avc script and data.
-	 */
-	public function enqueue_avc_script()
-	{
-
-
-		// Enqueue script sebelum menggunakan wp_localize_script
-		wp_register_script('avc-js', AVC_PLUGIN_ASSETS_URL . '/frontend/visit.js', ['wp-element'], AVC_VERSION, true);
-		wp_enqueue_script('avc-js');
-
-
-		// wp_localize_script('avc-chat', 'avcData', [
-		// 	'baseUrl' => get_site_url(),
-		// 	'pluginApiUrl' => rest_url() . AVC_ROUTE_PREFIX,
-
-		// 	'nonce'     => wp_create_nonce('wp_rest'),
-		// ]);
+		// add_action('wp_footer', array($this, 'render_frontend_container'), 5);
+		add_filter('the_content', array($this, 'render_frontend_counter'));
 	}
 
 
 
-
-	/**
-	 * Render the frontend container div.
-	 */
-	public function render_frontend_container()
+	public function render_frontend_counter($content)
 	{
-		echo '<div id="avc-app" class="avc-app"></div>';
-	}
-	/**
-	 * Enqueue script based on the current screen.
-	 *
-	 * @param string $screen The current screen.
-	 */
-	public function enqueue_script($screen)
-	{
-		// $current_screen     = $screen;
-		// $template_file_name = Template::FRONTEND_TEMPLATE;
+		$settings = json_decode(get_option('advico_settings') ?: '{}', true);
+		$display = false;
 
+		// Check if we're on a valid post type
+		if (!empty($settings['post_types'])) {
+			$display = is_singular($settings['post_types']);
+		}
 
-		// if (! is_admin()) {
-		// 	$template_slug = get_page_template_slug();
-		// 	if ($template_slug) {
+		// Check page type visibility
+		if (!empty($settings['page_types'])) {
+			foreach ($settings['page_types'] as $page_type) {
+				switch ($page_type) {
+					case 'home':
+						if (is_home() || is_front_page()) {
+							$display = true;
+						}
+						break;
+					case 'archive':
+						if (is_archive()) {
+							$display = true;
+						}
+						break;
+					case 'single':
+						if (is_singular()) {
+							$display = true;
+						}
+						break;
+				}
+			}
+		}
 
-		// 		if ($template_slug === $template_file_name) {
-		// 			array_push($this->allowed_screens, $template_file_name);
-		// 			$current_screen = $template_file_name;
-		// 		}
-		// 	}
+		if (!$display) {
+			return $content;
+		}
+		// if (in_the_loop()) {
+		// 	return $content;
 		// }
+		// Generate views counter HTML
+		$views_html = '<div class="avc-views-counter flex items-center">';
 
-		// if ( in_array( $current_screen, $this->allowed_screens, true ) ) {
-		// 	Assets\enqueue_asset(
-		// 		WPB_DIR . '/assets/frontend/dist',
-		// 		self::DEV_SCRIPT,
-		// 		$this->get_config()
-		// 	);
-		// 	wp_localize_script( self::HANDLE, self::OBJ_NAME, $this->get_data() );
-		// }
+		// Handle display styles
+		if (!empty($settings['display_styles'])) {
+			if (in_array('icon', $settings['display_styles'])) {
+				$views_html .= '<span class="avc-views-icon" style="display: inline-block; vertical-align: middle;">
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-hidden="true">
+  <rect x="0" fill="none" width="24" height="24"/>
+  <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V5h14v14zM9 17H7v-5h2v5zm4 0h-2v-7h2v7zm4 0h-2V7h2v10z"/>
+</svg>
+</span>';
+			}
+			if (in_array('label', $settings['display_styles'])) {
+				$views_html .= '<span class="avc-views-label">' . esc_html($settings['views_label']) . '</span>';
+			}
+		}
+
+		// Add the view count
+		$views_html .= '<span id="advico-views-count" class="advico-views-count">' . esc_html(get_post_meta(get_the_ID(), 'advico_views', true) ?? '0') . '</span>';
+		$views_html .= '</div>';
+
+		$position = $settings['position'] ?? 'after';
+
+		switch ($position) {
+			case 'before':
+				return $views_html . $content;
+			case 'after':
+				return $content . $views_html;
+			case 'manual':
+			default:
+				return $content;
+		}
+	}
+
+
+
+	public function enqueue_script()
+	{
 		Assets\enqueue_asset(
-			AVC_PLUGIN_DIR . '/assets/frontend/dist',
+			ADVICO_PLUGIN_DIR . '/assets/frontend/dist',
 			self::DEV_SCRIPT,
 			$this->get_config()
 		);
 		wp_localize_script(self::HANDLE, self::OBJ_NAME, $this->get_data());
 	}
+
 
 	/**
 	 * Get the script configuration.
@@ -152,7 +174,7 @@ class Frontend
 
 		return array(
 			'isAdmin'   => is_admin(),
-			'apiUrl'    => rest_url() . AVC_ROUTE_PREFIX,
+			'apiUrl'    => rest_url() . ADVICO_ROUTE_PREFIX,
 			'postId' 	=> get_the_ID(),
 			'userInfo'  => $this->get_user_data(),
 			'nonce'     => wp_create_nonce('wp_rest'),

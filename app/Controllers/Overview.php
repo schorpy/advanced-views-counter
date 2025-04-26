@@ -8,7 +8,7 @@
  * @since 1.0.0
  */
 
-namespace AVC\App\Controllers;
+namespace Advico\App\Controllers;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -23,20 +23,15 @@ class Overview
     public function get_chart()
     {
         global $wpdb;
-
-        // if (empty($datefrom) || empty($dateend)) {
-        //     return new \WP_REST_Response([
-        //         'status' => 'error',
-        //         'message' => 'Parameter required.'
-        //     ], 400);
-        // }
+        $table_views = $wpdb->prefix . 'advico_views';
 
         $results = $wpdb->get_results($wpdb->prepare(
             "SELECT period, SUM(count) as total
-             FROM wp_avc_views
+             FROM %i
              WHERE period BETWEEN %s AND %s
              GROUP BY period
              ORDER BY period ASC",
+            $table_views,
             gmdate('Ymd', strtotime('-6 days')), //date() is affected by runtime timezone changes which can cause date/time to be incorrectly displayed. Use gmdate() instead. 
             gmdate('Ymd')
         ));
@@ -86,50 +81,27 @@ class Overview
     public function get_referers(\WP_REST_Request $request)
     {
         global $wpdb;
+        $table_ref = $wpdb->prefix . 'advico_referers';
+        $results = $wpdb->get_results($wpdb->prepare(
+            "SELECT referer_url, SUM(count) as total
+             FROM %i
+             WHERE period BETWEEN %s AND %s
+             GROUP BY referer_hash
+             ORDER BY total DESC
+             LIMIT 10",
+            $table_ref,
+            gmdate('Ymd', strtotime('-6 days')),
+            gmdate('Ymd')
+        ));
 
-        $datefrom = $request->get_param('from') ? sanitize_text_field($request->get_param('from')) : '';
-        $dateend  = $request->get_param('to') ? sanitize_text_field($request->get_param('to')) : '';
-
-        if (empty($datefrom) || empty($dateend)) {
-            return new \WP_REST_Response([
-                'status' => 'error',
-                'message' => 'Parameter "from" dan "to" wajib diisi.'
-            ], 400);
-        }
-
-        // Konversi ke timestamp UNIX
-        $from_ts = strtotime($datefrom . ' 00:00:00');
-        $to_ts   = strtotime($dateend . ' 23:59:59');
-
-        // Ambil semua leads dalam range waktu
-
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT click_time FROM gmk_leads 
-                 WHERE click_time BETWEEN %d AND %d",
-                $from_ts,
-                $to_ts
-            )
-        );
-
-        $refererData = [];
-        // Hitung jumlah berdasarkan referer
-        foreach ($results as $row) {
-            $referer = $row->referer ?? 'Unknown';
-
-            if (!isset($refererData[$referer])) {
-                $refererData[$referer] = 0;
-            }
-
-            $refererData[$referer]++;
-        }
-
-        // Format untuk chart
         $finalData = [];
-        foreach ($refererData as $referer => $count) {
+
+        foreach ($results as $row) {
+            $referer = $row->referer_url ?? 'Unknown';
+
             $finalData[] = [
                 'name' => $referer,
-                'lead' => $count
+                'views' => (int) $row->total
             ];
         }
 
@@ -140,15 +112,40 @@ class Overview
     }
 
     /**
-     * Get Agents function.
+     * Get Post function.
      */
 
-    public function get_agents(\WP_REST_Request $request)
+    public function get_posts(\WP_REST_Request $request)
     {
-        // global $wpdb;
-        // return new \WP_REST_Response([
-        //     'status' => 'success',
-        //     'data'   => $finalData
-        // ], 200);
+        global $wpdb;
+        $table_views = $wpdb->prefix . 'advico_views';
+        $results = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, SUM(count) as total
+             FROM %i
+             WHERE period BETWEEN %s AND %s
+             GROUP BY id
+             ORDER BY total DESC
+             LIMIT 5",
+            $table_views,
+            gmdate('Ymd', strtotime('-6 days')),
+            gmdate('Ymd')
+        ));
+
+        $finalData = [];
+        foreach ($results as $row) {
+            $post = get_post($row->id);
+            if ($post) {
+                $finalData[] = [
+                    'title' => $post->post_title,
+                    'url' => get_permalink($row->id),
+                    'views' => (int) $row->total
+                ];
+            }
+        }
+
+        return new \WP_REST_Response([
+            'status' => 'success',
+            'data'   => $finalData
+        ], 200);
     }
 }
