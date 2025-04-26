@@ -112,7 +112,7 @@ class Settings
 
         unset($post_types['reply'], $post_types['attachment']);
 
-        $saved_settings = json_decode(get_option('avc_settings', '{}'), true);
+        $saved_settings = json_decode(get_option('advico_settings', '{}'), true);
 
         $selected_exclude_visitors = $saved_settings['user_types'] ?? [];
         $selected_views_label = $saved_settings['views_label'] ?? [];
@@ -192,7 +192,7 @@ class Settings
         $position = isset($params['position']) ? sanitize_text_field($params['position']) : 'after';
         $user_types = isset($params['user_type']) ? array_map('sanitize_text_field', (array) $params['user_type']) : [];
         // Merge with existing settings
-        $settings = json_decode(get_option('avc_settings'), true) ?? [];
+        $settings = json_decode(get_option('advico_settings'), true) ?? [];
 
         $settings['post_types'] = $post_types;
         $settings['page_types'] = $page_types;
@@ -201,8 +201,8 @@ class Settings
         $settings['position'] = $position;
         $settings['user_types'] = $user_types;
         // Save as JSON
-        update_option('avc_settings', wp_json_encode($settings));
-        Cache::set_cache('avc_settings', $settings);
+        update_option('advico_settings', wp_json_encode($settings));
+        Cache::set_cache('advico_settings', $settings);
         return new \WP_REST_Response([
             'status' => 'success',
             'message' => 'Settings updated successfully',
