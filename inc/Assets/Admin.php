@@ -44,7 +44,7 @@ class Admin
 	 * @var array
 	 */
 	private $allowed_screens = array(
-		'toplevel_page_advanced-views-counter',
+		'toplevel_page_advico-views-counter',
 	);
 
 	/**

@@ -72,7 +72,7 @@ function get_manifest(string $manifest_dir): object
 	 * @param string $manifest_path Manifest file path.
 	 * @param bool   $is_dev        Whether this is a manifest for development assets.
 	 */
-	$manifest = apply_filters('vite_for_wp__manifest_data', $manifest, $manifest_dir, $manifest_path);
+
 
 	$manifests[$manifest_path] = (object) array(
 		'data'   => $manifest,
@@ -191,15 +191,20 @@ function inject_react_refresh_preamble_script(object $manifest): void
 	$react_refresh_script_src = generate_development_asset_src($manifest, '@react-refresh');
 	$script_position          = 'after';
 	$script = sprintf(
-		'import RefreshRuntime from "%s";
-		RefreshRuntime.injectIntoGlobalHook(window);
-		window.$RefreshReg$ = () => {};
-		window.$RefreshSig$ = () => (type) => type;
-		window.__vite_plugin_react_preamble_installed__ = true;',
+		'if (!window.__vite_plugin_react_preamble_installed__) {
+			import("%s").then((mod) => {
+				const RefreshRuntime = mod.default;
+				RefreshRuntime.injectIntoGlobalHook(window);
+				window.$RefreshReg$ = () => {};
+				window.$RefreshSig$ = () => (type) => type;
+				window.__vite_plugin_react_preamble_installed__ = true;
+			});
+		}',
 		esc_js($react_refresh_script_src)
 	);
 
 	wp_add_inline_script(VITE_CLIENT_SCRIPT_HANDLE, $script, $script_position);
+
 	add_filter(
 		'wp_inline_script_attributes',
 		function (array $attributes) use ($script_position): array {
@@ -258,7 +263,7 @@ function load_development_asset(object $manifest, string $entry, array $options)
 	 * @param string $entry    Entrypoint file.
 	 * @param array  $options  Enqueue options.
 	 */
-	$assets = apply_filters('vite_for_wp__development_assets', $assets, $manifest, $entry, $options);
+
 
 	return $assets;
 }
@@ -323,7 +328,7 @@ function load_production_asset(object $manifest, string $entry, array $options):
 	 * @param string $entry    Entrypoint file.
 	 * @param array  $options  Enqueue options.
 	 */
-	$assets = apply_filters('vite_for_wp__production_assets', $assets, $manifest, $entry, $options);
+
 
 	return $assets;
 }
