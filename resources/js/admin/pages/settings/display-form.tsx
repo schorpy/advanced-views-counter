@@ -35,6 +35,7 @@ const displayFormSchema = z.object({
   display_style: z.array(z.string()).default([]).optional(),
   post_type: z.array(z.string()).optional(),
   page_type: z.array(z.string()).default([]).optional(),
+  user_type: z.array(z.string()).optional(),
   position: z.string().default("after"),
 })
 
@@ -47,10 +48,11 @@ const defaultValues: Partial<DisplayFormValues> = {
   post_type: [],
   page_type: [],
   position: "after",
+  user_type: [],
 }
 
 export function DisplayForm() {
-  const api = new FetchWrapper(avc_plugin.pluginApiUrl, avc_plugin.nonce);
+  const api = new FetchWrapper(advico_plugin.pluginApiUrl, advico_plugin.nonce);
   const [settings, setSettings] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,7 +63,7 @@ export function DisplayForm() {
   })
 
   useEffect(() => {
-    document.title = `Display Settings | ${avc_plugin.pluginName}`;
+    document.title = `Display Settings | ${advico_plugin.pluginName}`;
     
     api.get(`/settings/display`)
     .then(data => {
@@ -81,9 +83,13 @@ export function DisplayForm() {
       .filter((item: any) => item.selected)
       .map((item: any) => item.id);
 
-        const selectedDisplayStyles = (response.display_styles || [])
-        .filter((item: any) => item.selected)
-        .map((item: any) => item.id);
+      const selectedDisplayStyles = (response.display_styles || [])
+      .filter((item: any) => item.selected)
+      .map((item: any) => item.id);
+      
+      const selectedUserTypes = (response.user_types || [])
+      .filter((item: any) => item.selected)
+      .map((item: any) => item.id);
 
       // Reset nilai form
       form.reset({
@@ -92,6 +98,7 @@ export function DisplayForm() {
         post_type: selectedPostTypes,
         page_type: selectedPageTypes,
         position: response.position || "after",
+        user_type: selectedUserTypes,
       });
     })
       .catch(error => {
@@ -285,6 +292,7 @@ export function DisplayForm() {
           )}
         />
 
+{/* Position */}
         <FormField
           control={form.control}
           name="position"
@@ -300,17 +308,53 @@ export function DisplayForm() {
                 <SelectContent>
                   <SelectItem value="before">Before The Content</SelectItem>
                   <SelectItem value="after">After The Content</SelectItem>
-                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="manual">Don't show</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription>
-                Select where would you like to display the post views counter. Use [post-views] shortcode for manual display.
+                Select where would you like to display the post views counter.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+        {/* User Type */}
+        <FormField
+          control={form.control}
+          name="user_type"
+          render={({ field }) => (
+            <FormItem>
+              <div className="mb-4">
+                <FormLabel className="text-base">User Type</FormLabel>
+                <FormDescription>
+                Use it to hide the views counter from selected type of visitors.
+                </FormDescription>
+              </div>
+              <div className="flex flex-row flex-wrap gap-6">
+                {settings?.user_types.map((item) => (
+                    <FormItem key={item.id} className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(item.id)}
+                          onCheckedChange={(checked) => {
+                            const currentValue = field.value || [];
+                            if (checked) {
+                              field.onChange([...currentValue, item.id]);
+                            } else {
+                              field.onChange(currentValue.filter((value) => value !== item.id));
+                            }
+                            
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal">{item.label}</FormLabel>
+                    </FormItem>
+                  ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
           <Button type="submit" className="font-semibold text-white" disabled={isSubmitting}>
             {isSubmitting ? (
               <>

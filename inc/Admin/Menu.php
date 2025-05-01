@@ -25,7 +25,7 @@ class Menu
 	 *
 	 * @var string
 	 */
-	private $parent_slug = 'advico-views-counter';
+	private $parent_slug = 'advanced-views-counter';
 
 	/**
 	 * Initializes the admin menu.
@@ -47,12 +47,12 @@ class Menu
 	{
 
 		add_menu_page(
-			__('Advanced Views Counter', 'advanced-views-counter'),
-			__('Advanced Views Counter', 'advanced-views-counter'),
+			__('Advaced Views Counter', 'advanced-views-counter'),
+			__('Advaced Views Counter', 'advanced-views-counter'),
 			'manage_options',
 			$this->parent_slug,
 			array($this, 'admin_page'),
-			ADVICO_PLUGIN_ASSETS_URL . '/icons/icon-16x16.png',
+			ADVICO_PLUGIN_ASSETS_URL . '/icon-16x16.png',
 			3
 		);
 
@@ -80,7 +80,7 @@ class Menu
 				'menu_title'  => __('Settings', 'advanced-views-counter'),
 				'capability'  => 'manage_options',
 				'menu_slug'   => $plugin_url . '/#/settings',
-				'function'    => array($this, 'admin_page'),
+				'function'    => null, // Uses the same callback function as parent menu.
 			),
 		);
 
@@ -99,9 +99,15 @@ class Menu
 		}
 	}
 
-
+	/**
+	 * Callback function for the main "Advico" menu page.
+	 *
+	 * @return void
+	 */
 	public function admin_page()
 	{
-		echo '<div id="advico-admin" class="advico-app"></div>';
+?>
+		<div id="advico-admin" class="advico-app"></div>
+<?php
 	}
 }

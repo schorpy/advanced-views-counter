@@ -25,12 +25,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function OverviewReferer({ dateFrom = '', dateTo = '' }) {
+export function OverviewPost({ dateFrom = '', dateTo = '' }) {
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
   useEffect(() => {
     const api = new FetchWrapper(advico_plugin.pluginApiUrl, advico_plugin.nonce);
-  api.get(`/overview/referers`) 
+  api.get(`/overview/posts`) 
       .then(data => {
         setChartData(data.data);
         setIsLoading(false);
@@ -56,7 +56,7 @@ export function OverviewReferer({ dateFrom = '', dateTo = '' }) {
           >
             <CartesianGrid horizontal={false} />
             <YAxis
-              dataKey="name"
+              dataKey="title"
               type="category"
               tickLine={false}
               tickMargin={10}
@@ -76,7 +76,7 @@ export function OverviewReferer({ dateFrom = '', dateTo = '' }) {
               radius={4}
             >
               <LabelList
-                dataKey="name"
+                dataKey="title"
                 position="insideLeft"
                 offset={8}
                 className="fill-[--color-label]"

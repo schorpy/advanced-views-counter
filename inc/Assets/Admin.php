@@ -8,6 +8,7 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
+use Advico\Core\Template;
 use Advico\App\Traits\Singleton;
 use Advico\Libs\Assets;
 
@@ -44,7 +45,7 @@ class Admin
 	 * @var array
 	 */
 	private $allowed_screens = array(
-		'toplevel_page_advico-views-counter',
+		'toplevel_page_advanced-views-counter',
 	);
 
 	/**
@@ -55,6 +56,17 @@ class Admin
 	public function bootstrap()
 	{
 		add_action('admin_enqueue_scripts', array($this, 'enqueue_script'));
+		add_action('admin_head', function () {
+			// Only run on your plugin page
+			$screen = get_current_screen();
+			if (!isset($screen->id) || !in_array($screen->id, $this->allowed_screens, true)) {
+				return;
+			}
+
+			// Remove all notices from other plugins
+			remove_all_actions('admin_notices');
+			remove_all_actions('all_admin_notices');
+		});
 	}
 
 	/**

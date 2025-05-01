@@ -27,11 +27,25 @@ class Install
 	public function init()
 	{
 
+		$this->install_pages();
 		$this->install_tables();
 		$this->insert_data();
+		$this->register_shortcode();
 	}
 
-
+	/**
+	 * Install the pages
+	 *
+	 * @return void
+	 */
+	private function install_pages()
+	{
+		// advico_install_page(
+		// 	Template::FRONTEND_TEMPLATE_NAME,
+		// 	Template::FRONTEND_TEMPLATE_SLUG,
+		// 	Template::FRONTEND_TEMPLATE
+		// );
+	}
 
 	/**
 	 * Install the tables
@@ -110,5 +124,15 @@ class Install
 
 			update_option('advico_settings_count', wp_json_encode($default_settings));
 		}
+	}
+	private function register_shortcode()
+	{
+		// \Advico\Libs\Utils\Shortcode::add()
+		// 	->tag('avc-views')
+		// 	->attrs(['title', 'class'])
+		// 	->render(function ($atts, $content) {
+		// 		post_views_shortcode
+		// 		return "<div class='{$atts['class']}'><h3>{$atts['title']}</h3><p>{$content}</p></div>";
+		// 	});
 	}
 }

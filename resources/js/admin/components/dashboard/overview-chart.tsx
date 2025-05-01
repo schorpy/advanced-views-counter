@@ -53,8 +53,8 @@ export function OverviewChart({ dateFrom = '', dateTo = '' }) {
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
   useEffect(() => {
-    const api = new FetchWrapper(avc_plugin.pluginApiUrl, avc_plugin.nonce);
-      api.get(`/overview/chart?from=${dateFrom}&to=${dateTo}`) 
+    const api = new FetchWrapper(advico_plugin.pluginApiUrl, advico_plugin.nonce);
+      api.get(`/overview/chart`) 
           .then(data => {
             setChartData(data.data);
             setIsLoading(false);

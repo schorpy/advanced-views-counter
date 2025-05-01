@@ -5,7 +5,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
-const el = document.getElementById("avc-admin");
+const el = document.getElementById("advico-admin");
 
 if (el) {
   ReactDOM.createRoot(el).render(

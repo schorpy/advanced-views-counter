@@ -33,7 +33,8 @@ import { Spinner } from '@/components/ui/spinner';
 const countFormSchema = z.object({
   post_type: z.array(z.string()).optional(),
   visitor_type: z.array(z.string()).optional(),
-
+  interval_count: z.string().optional(),
+  interval_unit: z.string().optional(),
 })
 
 
@@ -41,14 +42,15 @@ type CountFormValues = z.infer<typeof countFormSchema>
 
 // This can come from your database or API.
 const defaultValues: Partial<CountFormValues> = {
-  views_label: "",
   post_type: [],
   visitor_type: [],
+  interval_count: "",
+  interval_unit: "",
 }
 
 export function CountForm() {
 
-  const api = new FetchWrapper(avc_plugin.pluginApiUrl, avc_plugin.nonce);
+  const api = new FetchWrapper(advico_plugin.pluginApiUrl, advico_plugin.nonce);
   const [settings, setSettings] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,7 +61,7 @@ export function CountForm() {
   })
 
   useEffect(() => {
-    document.title = `Count Settings | ${avc_plugin.pluginName}`;
+    document.title = `Count Settings | ${advico_plugin.pluginName}`;
     
     api.get(`/settings/counts`) 
       .then(data => {
@@ -79,6 +81,8 @@ export function CountForm() {
         form.reset({
           post_type: selectedPostTypes,
           visitor_type: selectedVisitorTypes,
+          interval_count: response.interval_count,
+          interval_unit: response.interval_unit
         });
     })
       .catch(error => {
@@ -221,31 +225,55 @@ export function CountForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="position"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cleanup Interval</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select interval" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="before">7 days</SelectItem>
-                  <SelectItem value="after">14 days</SelectItem>
-                  <SelectItem value="manual">30 days</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-              Delete single day post views data older than specified above. Enter 0 if you want to preserve your daily views data regardless of its age.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+<div className="space-y-2">
+  <FormLabel>Count Interval</FormLabel>
+  <div className="flex items-center gap-2">
+    <FormField
+      control={form.control}
+      name="interval_count"
+      render={({ field }) => (
+        <FormItem>
+          <FormControl>
+            <Input
+              type="number"
+  className="h-10 px-3 py-2 !border !border-input !bg-background text-sm !rounded-md dark:text-white max-w-[80px]"
+              placeholder="Enter number"
+              {...field}
+            />
+          </FormControl>
+        </FormItem>
+      )}
+    />
+
+    <FormField
+      control={form.control}
+      name="interval_unit"
+      render={({ field }) => (
+        <FormItem className="w-1/2">
+          <FormControl>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="minutes">Minutes</SelectItem>
+                <SelectItem value="hours">Hours</SelectItem>
+                <SelectItem value="days">Days</SelectItem>
+                <SelectItem value="weeks">Weeks</SelectItem>
+                <SelectItem value="months">Months</SelectItem>
+                <SelectItem value="years">Years</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormControl>
+        </FormItem>
+      )}
+    />
+  </div>
+  <FormDescription>
+    Enter the time between user visits. Use 0 to count every page view.
+  </FormDescription>
+</div>
+
         
         <Button type="submit" className="font-semibold text-white" disabled={isSubmitting}>
             {isSubmitting ? (

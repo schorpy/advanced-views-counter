@@ -3,14 +3,38 @@
 /**
  * Plugin Function file.
  *
- * @since 1.0.0
+ * @since 1.0.1
  *
- * @package Advico
+ * @package Popzy
  */
 
 defined('ABSPATH') || exit;
 
-
+/**
+ * Installs a custom page with the specified title, name, and template file.
+ *
+ * @param string $page_title               The title of the page.
+ * @param string $page_name                The name (slug) of the page.
+ * @param string $page_template_file_name The filename of the page template.
+ * @return void
+ */
+function advico_install_page($page_title, $page_name, $page_template_file_name)
+{
+	// Check if a page with the specified name does not exist.
+	// if (! get_page_by_path($page_name)) {
+	// 	$args = array(
+	// 		'post_title'  => $page_title,
+	// 		'post_name'   => $page_name,
+	// 		'post_status' => 'publish',
+	// 		'post_author' => 1,
+	// 		'post_type'   => 'page',
+	// 	);
+	// 	// Insert a new page.
+	// 	$id = wp_insert_post($args);
+	// 	// Add post meta for the page template.
+	// 	add_post_meta($id, '_wp_page_template', $page_template_file_name);
+	// }
+}
 
 /**
  * Retrieves the configuration from the specified file.
@@ -37,19 +61,16 @@ function advico_get_config($config_file_name)
  * @return void
  */
 
-function advico_delete_views($post_id)
+function advico_delete_post_views($post_id)
 {
-	if (!is_numeric($post_id) || intval($post_id) <= 0) {
-		return; // Prevent invalid deletions
-	}
-
 	global $wpdb;
 
-	$post_id = intval($post_id);
+	$data = [
+		'where'		=> ['id' => $post_id],
+		'format'	=> ['%d']
+	];
 
-	$wpdb->delete(
-		$wpdb->prefix . 'advico_views',
-		['id' => $post_id],
-		['%d']
-	);
+	$data = apply_filters('pvc_delete_post_views_where_clause', $data, $post_id);
+
+	$wpdb->delete($wpdb->prefix . 'advico_views', $data['where'], $data['format']);
 }

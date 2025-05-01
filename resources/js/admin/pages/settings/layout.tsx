@@ -24,7 +24,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <>
 
-      <div className="hidden space-y-6 p-10 pb-16 md:block dark:bg-gray-900">
+      <div className="space-y-6 p-10 pb-16 md:block dark:bg-gray-900">
         <div className="space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight dark:text-white">Settings</h2>
           <p className="text-muted-foreground">

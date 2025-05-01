@@ -30,8 +30,8 @@ final class Plugin
         }
         Frontend::getInstance()->bootstrap();
 
-        self::load_and_cache('advico_settings');
-        self::load_and_cache('advico_settings_count');
+        self::load_and_cache('avc_settings');
+        self::load_and_cache('avc_settings_count');
 
         // add_action('init', array(__CLASS__, 'register_blocks'));
     }

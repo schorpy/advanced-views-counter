@@ -39,6 +39,10 @@ class Frontend
 	 */
 	const DEV_SCRIPT = 'resources/js/frontend/index.jsx';
 
+	/**
+	 * Production script path for avc.
+	 */
+	const PROD_SCRIPT = 'resources/js/frontend/index.jsx';
 
 	/**
 	 * List of allowed screens for script enqueue.
@@ -46,7 +50,7 @@ class Frontend
 	 * @var array
 	 */
 	// private $allowed_screens = array(
-	// 	'advico',
+	// 	'avc',
 	// );
 
 	/**
@@ -58,10 +62,29 @@ class Frontend
 	{
 		add_action('wp_enqueue_scripts', array($this, 'enqueue_script'));
 		// add_action('wp_footer', array($this, 'render_frontend_container'), 5);
+		add_action('wp_enqueue_scripts', array($this, 'enqueue_avc_script'));
 		add_filter('the_content', array($this, 'render_frontend_counter'));
 	}
 
+	/**
+	 * Enqueue avc script and data.
+	 */
+	public function enqueue_avc_script()
+	{
 
+
+		// Enqueue script sebelum menggunakan wp_localize_script
+		// wp_register_script('avc-js', Advico_PLUGIN_ASSETS_URL . '/frontend/visit.js', ['wp-element'], Advico_VERSION, true);
+		// wp_enqueue_script('avc-js');
+
+
+		// wp_localize_script('avc-chat', 'avcData', [
+		// 	'baseUrl' => get_site_url(),
+		// 	'pluginApiUrl' => rest_url() . Advico_ROUTE_PREFIX,
+
+		// 	'nonce'     => wp_create_nonce('wp_rest'),
+		// ]);
+	}
 
 	public function render_frontend_counter($content)
 	{
@@ -108,12 +131,7 @@ class Frontend
 		// Handle display styles
 		if (!empty($settings['display_styles'])) {
 			if (in_array('icon', $settings['display_styles'])) {
-				$views_html .= '<span class="avc-views-icon" style="display: inline-block; vertical-align: middle;">
-<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-hidden="true">
-  <rect x="0" fill="none" width="24" height="24"/>
-  <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V5h14v14zM9 17H7v-5h2v5zm4 0h-2v-7h2v7zm4 0h-2V7h2v10z"/>
-</svg>
-</span>';
+				$views_html .= '<span class="avc-views-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>';
 			}
 			if (in_array('label', $settings['display_styles'])) {
 				$views_html .= '<span class="avc-views-label">' . esc_html($settings['views_label']) . '</span>';
@@ -121,7 +139,7 @@ class Frontend
 		}
 
 		// Add the view count
-		$views_html .= '<span id="advico-views-count" class="advico-views-count">' . esc_html(get_post_meta(get_the_ID(), 'advico_views', true) ?? '0') . '</span>';
+		$views_html .= '<span id="advico-views-count" class="advico-views-count">' . esc_html(get_post_meta(get_the_ID(), 'avc_views', true) ?? '0') . '</span>';
 		$views_html .= '</div>';
 
 		$position = $settings['position'] ?? 'after';
@@ -138,18 +156,67 @@ class Frontend
 	}
 
 
-
-	public function enqueue_script()
+	/**
+	 * Enqueue script based on the current screen.
+	 *
+	 * @param string $screen The current screen.
+	 */
+	public function enqueue_script($screen)
 	{
+		// $current_screen     = $screen;
+		// $template_file_name = Template::FRONTEND_TEMPLATE;
+
+
+		// if (! is_admin()) {
+		// 	$template_slug = get_page_template_slug();
+		// 	if ($template_slug) {
+
+		// 		if ($template_slug === $template_file_name) {
+		// 			array_push($this->allowed_screens, $template_file_name);
+		// 			$current_screen = $template_file_name;
+		// 		}
+		// 	}
+		// }
+
+		// if ( in_array( $current_screen, $this->allowed_screens, true ) ) {
+		// 	Assets\enqueue_asset(
+		// 		WPB_DIR . '/assets/frontend/dist',
+		// 		self::DEV_SCRIPT,
+		// 		$this->get_config()
+		// 	);
+		// 	wp_localize_script( self::HANDLE, self::OBJ_NAME, $this->get_data() );
+		// }
+		$script = $this->is_dev_mode()
+			? self::DEV_SCRIPT
+			: ($this->get_asset_from_manifest(self::PROD_SCRIPT)['file'] ?? null);
+
+		if (! $script) return;
+
 		Assets\enqueue_asset(
 			ADVICO_PLUGIN_DIR . '/assets/frontend/dist',
-			self::DEV_SCRIPT,
+			$script,
 			$this->get_config()
 		);
 		wp_localize_script(self::HANDLE, self::OBJ_NAME, $this->get_data());
 	}
 
+	public function is_dev_mode()
+	{
+		return defined('ADVICO_DEV_MODE') && ADVICO_DEV_MODE === true;
+	}
 
+	public function get_asset_from_manifest($entry)
+	{
+		$path = ADVICO_PLUGIN_DIR . '/assets/frontend/dist/assets/manifest.json';
+
+		if (! file_exists($path)) {
+			return null;
+		}
+
+		$manifest = json_decode(file_get_contents($path), true);
+
+		return $manifest[$entry] ?? null;
+	}
 	/**
 	 * Get the script configuration.
 	 *
