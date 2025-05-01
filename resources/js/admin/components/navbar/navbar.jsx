@@ -53,7 +53,7 @@ import {
                           decoding="async"
                       />
                   )}
-                <span className="text-xl font-semibold">Advanced Views Counter</span>
+                <span className="text-base md:text-xl font-semibold">Advanced Views Counter</span>
               </a>
   
         <NavigationMenu className="hidden md:block">
